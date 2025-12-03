@@ -15,14 +15,14 @@ type Game struct {
 	ArenaCity       *string    `json:"arena_city" db:"arena_city"`
 
 	// Teams & Result
-	HomeTeam         *string `json:"home_team" db:"home_team"`
-	VisitorTeam      *string `json:"visitor_team" db:"visitor_team"`
-	WinningTeam      *string `json:"winning_team" db:"winning_team"`
-	HomePoints       *int64  `json:"home_points" db:"home_points"`
-	VisitorPoints    *int64  `json:"visitor_points" db:"visitor_points"`
-	PointDifferential *int64 `json:"point_differential" db:"point_differential"`
-	TotalPoints      *int64  `json:"total_points" db:"total_points"`
-	IsOvertime       *bool   `json:"is_overtime" db:"is_overtime"`
+	HomeTeam          *string `json:"home_team" db:"home_team"`
+	VisitorTeam       *string `json:"visitor_team" db:"visitor_team"`
+	WinningTeam       *string `json:"winning_team" db:"winning_team"`
+	HomePoints        *int64  `json:"home_points" db:"home_points"`
+	VisitorPoints     *int64  `json:"visitor_points" db:"visitor_points"`
+	PointDifferential *int64  `json:"point_differential" db:"point_differential"`
+	TotalPoints       *int64  `json:"total_points" db:"total_points"`
+	IsOvertime        *bool   `json:"is_overtime" db:"is_overtime"`
 
 	// Home Advanced Stats
 	HomeOffensiveRating *float64 `json:"home_offensive_rating" db:"home_offensive_rating"`
@@ -51,5 +51,6 @@ type Game struct {
 // Repository Interface
 type GameRepository interface {
 	GetGameByID(ctx context.Context, id string) (*Game, error)
-	ListGames(ctx context.Context, limit, offset int) ([]Game, error)
+	// Updated Signature
+	ListGames(ctx context.Context, filter GameFilter) (*GamesResponse, error)
 }

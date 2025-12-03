@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 	"github.com/nprasad2077/NBA_Gin/internal/domain"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,14 +21,21 @@ func (h *GameHandler) GetGame(c *gin.Context) {
 }
 
 func (h *GameHandler) ListGames(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
-	offset := (page - 1) * pageSize
+	var filter domain.GameFilter
 
-	games, err := h.Repo.ListGames(c.Request.Context(), pageSize, offset)
+	// 1. Bind Query Params to Struct
+    // This handles ?page=1, ?team=LAL, ?season=2015, etc.
+	if err := c.ShouldBindQuery(&filter); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query parameters"})
+		return
+	}
+
+	// 2. Call Repository
+	response, err := h.Repo.ListGames(c.Request.Context(), filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, games)
+
+	c.JSON(http.StatusOK, response)
 }
