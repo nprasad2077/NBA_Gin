@@ -18,31 +18,21 @@ func NewGameRepository(db *DB) domain.GameRepository {
 
 func (r *gameRepository) GetGameByID(ctx context.Context, id string) (*domain.Game, error) {
 	query := `
-		SELECT game_id, game_date, home_team, visitor_team, home_points, visitor_points
+		SELECT *
 		FROM analytics_dev_intermediate.int_games_enriched
 		WHERE game_id = @id
 	`
 	args := pgx.NamedArgs{"id": id}
 
-	// 1. Execute Query and handle error
-	rows, err := r.db.Pool.Query(ctx, query, args)
-	if err != nil {
-		return nil, fmt.Errorf("query failed: %w", err)
-	}
-
-	// 2. Collect the row into a value
-	game, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[domain.Game])
-	if err != nil {
-		return nil, err
-	}
-
-	// 3. Return the pointer to the value
-	return &game, nil
+	row, _ := r.db.Pool.Query(ctx, query, args)
+	
+	// FIX: Use RowToAddrOfStructByName to return a pointer (*domain.Game)
+	return pgx.CollectOneRow(row, pgx.RowToAddrOfStructByName[domain.Game])
 }
 
 func (r *gameRepository) ListGames(ctx context.Context, limit, offset int) ([]domain.Game, error) {
 	query := `
-		SELECT game_id, game_date, home_team, visitor_team, home_points, visitor_points
+		SELECT *
 		FROM analytics_dev_intermediate.int_games_enriched
 		ORDER BY game_date DESC
 		LIMIT @limit OFFSET @offset
@@ -56,8 +46,8 @@ func (r *gameRepository) ListGames(ctx context.Context, limit, offset int) ([]do
 	if err != nil {
 		return nil, fmt.Errorf("query failed: %w", err)
 	}
-	// No defer rows.Close() needed here because CollectRows closes them, 
-	// but keeping it doesn't hurt. pgx.CollectRows handles the closing usually.
-	
+	defer rows.Close()
+
+	// This remains RowToStructByName because ListGames returns []domain.Game (slice of values)
 	return pgx.CollectRows(rows, pgx.RowToStructByName[domain.Game])
 }
