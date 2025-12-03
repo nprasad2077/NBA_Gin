@@ -40,3 +40,5 @@ docs/gin_docs/*
 
 postgres_data/
 .env
+
+data/
