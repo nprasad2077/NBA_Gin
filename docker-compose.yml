@@ -1,0 +1,41 @@
+services:
+  app:
+    build: .
+    container_name: nba_backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    networks:
+      - nba-network
+
+  db:
+    image: postgres:16-alpine
+    container_name: nba_postgres_backend
+    ports:
+      - "5441:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      # CHANGED: Now points to a local folder named 'postgres_data'
+      - ./postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nba-network
+
+# DELETED: The top-level 'volumes' section is no longer needed
+# volumes:
+#   postgres_data:
+
+networks:
+  nba-network:
+    driver: bridge
